@@ -1,0 +1,393 @@
+:root {
+  color: #000;
+  background: #fff;
+  font-family:
+    Arial,
+    "Noto Sans KR",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #fbe9f4;
+  background-image: url("/images/site-background.webp");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+button {
+  font: inherit;
+}
+
+button,
+canvas {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page {
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  padding: 64px 24px;
+}
+
+.site-frame {
+  width: min(100%, 760px);
+}
+
+.banner {
+  overflow: hidden;
+  border: 3px solid #000;
+  background: #fff;
+  line-height: 0;
+}
+
+.banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.content-frame {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  min-height: 620px;
+  margin-top: 18px;
+  border: 3px solid #000;
+  background: #fff;
+}
+
+.list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border-right: 3px solid #000;
+}
+
+.list-item {
+  min-height: 82px;
+  padding: 16px 24px;
+  border: 0;
+  border-bottom: 3px solid #000;
+  border-radius: 0;
+  color: #000;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  text-align: left;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+
+.list-item:hover,
+.list-item:focus-visible,
+.list-item.is-selected {
+  color: #fff;
+  background: #000;
+}
+
+.list-item:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 4px;
+}
+
+.update-panel {
+  align-self: start;
+  min-height: 240px;
+  padding: 34px;
+  border-bottom: 3px solid #000;
+  background: #fff;
+}
+
+.update-panel h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+
+.update-panel p {
+  margin: 28px 0 0;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.drawing-page {
+  min-height: 100vh;
+  padding: 40px 24px;
+}
+
+.drawing-app {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  border: 3px solid #000;
+  background: #fff;
+}
+
+.drawing-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 22px 26px;
+  border-bottom: 3px solid #000;
+}
+
+.drawing-header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
+}
+
+.drawing-header p {
+  margin: 9px 0 0;
+}
+
+.back-button,
+.clear-canvas-button,
+.export-button,
+.undo-button,
+.tool-button {
+  border: 2px solid #000;
+  color: #000;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.back-button {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 3px solid #000;
+}
+
+.tool-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.tool-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 8px 14px;
+}
+
+.tool-button:hover,
+.tool-button:focus-visible,
+.tool-button.is-active,
+.back-button:hover,
+.back-button:focus-visible,
+.clear-canvas-button:hover,
+.clear-canvas-button:focus-visible,
+.export-button:hover,
+.export-button:focus-visible,
+.undo-button:hover:not(:disabled),
+.undo-button:focus-visible:not(:disabled) {
+  color: #fff;
+  background: #000;
+}
+
+.tool-button kbd {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  border: 1px solid currentColor;
+  font-family: inherit;
+  place-items: center;
+}
+
+.brush-size {
+  display: flex;
+  flex-direction: column;
+  min-width: 105px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.brush-size small,
+.undo-button small {
+  margin-top: 3px;
+  font-size: 0.67rem;
+  font-weight: 400;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.clear-canvas-button,
+.export-button,
+.undo-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 46px;
+  padding: 8px 14px;
+}
+
+.undo-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.canvas-frame {
+  position: relative;
+  padding: 20px;
+  background: #eee;
+}
+
+.drawing-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid #000;
+  background: #fff;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.drawing-canvas.tool-eraser {
+  cursor: cell;
+}
+
+.drawing-canvas.tool-text {
+  cursor: text;
+}
+
+.drawing-canvas:focus {
+  outline: 3px solid #f3a8d0;
+  outline-offset: -5px;
+}
+
+.canvas-text-input {
+  position: absolute;
+  z-index: 2;
+  width: min(300px, calc(100% - 40px));
+  min-height: 48px;
+  padding: 5px 8px;
+  border: 2px solid #000;
+  border-radius: 0;
+  outline: 3px solid #f3a8d0;
+  color: #111;
+  background: #fff;
+  font: 40px/1 Arial, sans-serif;
+  transform: translateY(-2px);
+}
+
+.drawing-help {
+  min-height: 48px;
+  margin: 0;
+  padding: 13px 20px;
+  border-top: 3px solid #000;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 24px 14px;
+  }
+
+  body {
+    background-attachment: scroll;
+  }
+
+  .content-frame {
+    grid-template-columns: 1fr;
+    min-height: 620px;
+  }
+
+  .list-panel {
+    gap: 0;
+    padding: 0;
+    border-right: 0;
+    border-bottom: 3px solid #000;
+  }
+
+  .list-item {
+    min-height: 64px;
+    padding: 12px 18px;
+  }
+
+  .update-panel {
+    width: 100%;
+    min-height: 230px;
+    padding: 26px 22px;
+  }
+
+  .drawing-page {
+    padding: 14px;
+  }
+
+  .drawing-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tool-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tool-button {
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .brush-size {
+    align-items: center;
+  }
+
+  .toolbar-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-left: 0;
+  }
+
+  .clear-canvas-button,
+  .export-button,
+  .undo-button {
+    padding: 8px 5px;
+    font-size: 0.75rem;
+  }
+
+  .canvas-frame {
+    padding: 10px;
+  }
+
+  .canvas-text-input {
+    width: min(230px, calc(100% - 20px));
+    min-height: 36px;
+    font-size: 24px;
+  }
+}
