@@ -73,7 +73,7 @@ function BlogLayout({ children, navigate, path, selectedId, setSelectedId }) {
     <div className="blog-page">
       <header className="blog-banner" aria-label="그림 배너">
         <img
-          src="/images/forest-banner.png"
+          src={`${import.meta.env.BASE_URL}images/forest-banner.png`}
           alt="숲길 배경에 블로그 문구가 들어간 배너"
         />
       </header>
