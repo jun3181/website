@@ -1,9 +1,10 @@
 :root {
-  color: #000;
-  background: #fff;
+  color: #1f2328;
+  background: #ffffff;
   font-family:
     Arial,
     "Noto Sans KR",
+    "Malgun Gothic",
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,16 +14,15 @@
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  background: #ffffff;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background-color: #fbe9f4;
-  background-image: url("/images/site-background.webp");
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
 }
 
 button {
@@ -34,55 +34,81 @@ canvas {
   -webkit-tap-highlight-color: transparent;
 }
 
-.page {
-  display: flex;
+.blog-page {
   min-height: 100vh;
-  justify-content: center;
-  padding: 64px 24px;
+  background: #ffffff;
 }
 
-.site-frame {
-  width: min(100%, 760px);
-}
-
-.banner {
+.blog-banner {
   overflow: hidden;
-  border: 3px solid #000;
-  background: #fff;
+  height: clamp(150px, 15vw, 220px);
+  border-bottom: 1px solid #d7d7d7;
+  background: #f7d4e6;
   line-height: 0;
 }
 
-.banner img {
+.blog-banner img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
-.content-frame {
-  display: grid;
-  grid-template-columns: 65% 35%;
-  min-height: 620px;
-  margin-top: 18px;
-  border: 3px solid #000;
-  background: #fff;
+.blog-background {
+  min-height: calc(100vh - clamp(150px, 15vw, 220px));
+  padding: 116px 24px 96px;
+  background-color: #fff7fb;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.88)),
+    url("/images/site-background.webp");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
 }
 
-.list-panel {
+.list-section {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.list-heading {
+  border-bottom: 2px solid #292929;
+}
+
+.list-heading h1 {
+  margin: 0 0 18px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.list-heading span {
+  color: #ff3c76;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.simple-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0;
-  border-right: 3px solid #000;
 }
 
-.list-item {
+.simple-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
   min-height: 82px;
   padding: 16px 24px;
   border: 0;
-  border-bottom: 3px solid #000;
+  border-bottom: 1px solid rgba(32, 32, 32, 0.14);
   border-radius: 0;
-  color: #000;
-  background: #fff;
+  color: #111111;
+  background: rgba(255, 255, 255, 0.72);
   cursor: pointer;
   font-weight: 700;
   text-align: left;
@@ -91,50 +117,47 @@ canvas {
     background 120ms ease;
 }
 
-.list-item:hover,
-.list-item:focus-visible,
-.list-item.is-selected {
-  color: #fff;
-  background: #000;
+.simple-list-item span {
+  font-size: 20px;
+  line-height: 1.2;
 }
 
-.list-item:focus-visible {
-  outline: 3px solid #000;
+.simple-list-item small {
+  flex: 0 0 auto;
+  color: #ff3c76;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.simple-list-item:hover,
+.simple-list-item:focus-visible,
+.simple-list-item.is-selected {
+  color: #ffffff;
+  background: #111111;
+}
+
+.simple-list-item:hover small,
+.simple-list-item:focus-visible small,
+.simple-list-item.is-selected small {
+  color: #ffffff;
+}
+
+.simple-list-item:focus-visible {
+  outline: 3px solid #111111;
   outline-offset: 4px;
-}
-
-.update-panel {
-  align-self: start;
-  min-height: 240px;
-  padding: 34px;
-  border-bottom: 3px solid #000;
-  background: #fff;
-}
-
-.update-panel h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
-  letter-spacing: -0.06em;
-  white-space: nowrap;
-}
-
-.update-panel p {
-  margin: 28px 0 0;
-  font-size: 1rem;
-  line-height: 1.7;
 }
 
 .drawing-page {
   min-height: 100vh;
   padding: 40px 24px;
+  background: #fbe9f4;
 }
 
 .drawing-app {
   width: min(1180px, 100%);
   margin: 0 auto;
-  border: 3px solid #000;
-  background: #fff;
+  border: 3px solid #000000;
+  background: #ffffff;
 }
 
 .drawing-header {
@@ -142,7 +165,7 @@ canvas {
   align-items: center;
   gap: 28px;
   padding: 22px 26px;
-  border-bottom: 3px solid #000;
+  border-bottom: 3px solid #000000;
 }
 
 .drawing-header h1 {
@@ -160,9 +183,9 @@ canvas {
 .export-button,
 .undo-button,
 .tool-button {
-  border: 2px solid #000;
-  color: #000;
-  background: #fff;
+  border: 2px solid #000000;
+  color: #000000;
+  background: #ffffff;
   cursor: pointer;
   font-weight: 700;
 }
@@ -177,7 +200,7 @@ canvas {
   align-items: center;
   gap: 14px;
   padding: 14px 18px;
-  border-bottom: 3px solid #000;
+  border-bottom: 3px solid #000000;
 }
 
 .tool-buttons {
@@ -204,8 +227,8 @@ canvas {
 .export-button:focus-visible,
 .undo-button:hover:not(:disabled),
 .undo-button:focus-visible:not(:disabled) {
-  color: #fff;
-  background: #000;
+  color: #ffffff;
+  background: #000000;
 }
 
 .tool-button kbd {
@@ -257,15 +280,15 @@ canvas {
 .canvas-frame {
   position: relative;
   padding: 20px;
-  background: #eee;
+  background: #eeeeee;
 }
 
 .drawing-canvas {
   display: block;
   width: 100%;
   height: auto;
-  border: 2px solid #000;
-  background: #fff;
+  border: 2px solid #000000;
+  background: #ffffff;
   cursor: crosshair;
   touch-action: none;
 }
@@ -289,11 +312,11 @@ canvas {
   width: min(300px, calc(100% - 40px));
   min-height: 48px;
   padding: 5px 8px;
-  border: 2px solid #000;
+  border: 2px solid #000000;
   border-radius: 0;
   outline: 3px solid #f3a8d0;
-  color: #111;
-  background: #fff;
+  color: #111111;
+  background: #ffffff;
   font: 40px/1 Arial, sans-serif;
   transform: translateY(-2px);
 }
@@ -302,42 +325,33 @@ canvas {
   min-height: 48px;
   margin: 0;
   padding: 13px 20px;
-  border-top: 3px solid #000;
+  border-top: 3px solid #000000;
   font-weight: 700;
 }
 
-@media (max-width: 640px) {
-  .page {
-    padding: 24px 14px;
+@media (max-width: 760px) {
+  .blog-banner {
+    height: 112px;
   }
 
-  body {
+  .blog-background {
+    min-height: calc(100vh - 112px);
+    padding: 58px 18px 72px;
     background-attachment: scroll;
   }
 
-  .content-frame {
-    grid-template-columns: 1fr;
-    min-height: 620px;
+  .list-heading h1 {
+    margin-bottom: 15px;
+    font-size: 19px;
   }
 
-  .list-panel {
-    gap: 0;
-    padding: 0;
-    border-right: 0;
-    border-bottom: 3px solid #000;
+  .simple-list-item {
+    min-height: 70px;
+    padding: 14px 18px;
   }
+}
 
-  .list-item {
-    min-height: 64px;
-    padding: 12px 18px;
-  }
-
-  .update-panel {
-    width: 100%;
-    min-height: 230px;
-    padding: 26px 22px;
-  }
-
+@media (max-width: 640px) {
   .drawing-page {
     padding: 14px;
   }
@@ -389,5 +403,26 @@ canvas {
     width: min(230px, calc(100% - 20px));
     min-height: 36px;
     font-size: 24px;
+  }
+}
+
+@media (max-width: 430px) {
+  .blog-banner {
+    height: 96px;
+  }
+
+  .blog-background {
+    min-height: calc(100vh - 96px);
+    padding-top: 42px;
+  }
+
+  .simple-list-item {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .simple-list-item span {
+    font-size: 18px;
   }
 }

@@ -30,8 +30,7 @@ function usePath() {
 }
 
 function HomePage({ navigate }) {
-  const [selectedId, setSelectedId] = useState(1);
-  const selectedItem = items.find((item) => item.id === selectedId);
+  const [selectedId, setSelectedId] = useState(2);
 
   function selectItem(item) {
     if (item.id === 1) {
@@ -43,38 +42,40 @@ function HomePage({ navigate }) {
   }
 
   return (
-    <main className="page">
-      <section className="site-frame" aria-label="사이트 기본 구조">
-        <header className="banner">
-          <img
-            src="/images/banner-focus.png"
-            alt="분홍색 방에서 쉬고 있는 캐릭터 배너"
-          />
-        </header>
+    <div className="blog-page">
+      <header className="blog-banner" aria-label="그림 배너">
+        <img
+          src="/images/banner-focus.png"
+          alt="분홍색 방에서 쉬고 있는 캐릭터 배너"
+        />
+      </header>
 
-        <div className="content-frame">
-          <nav className="list-panel" aria-label="목록">
+      <main className="blog-background">
+        <section className="list-section" aria-labelledby="list-title">
+          <div className="list-heading">
+            <h1 id="list-title">
+              전체 글 <span>(3)</span>
+            </h1>
+          </div>
+
+          <nav className="simple-list" aria-label="목록">
             {items.map((item) => (
               <button
                 key={item.id}
-                className={`list-item ${
+                className={`simple-list-item ${
                   item.id === selectedId ? "is-selected" : ""
                 }`}
                 type="button"
                 onClick={() => selectItem(item)}
               >
-                {item.label}
+                <span>{item.label}</span>
+                {item.id === 1 && <small>그림판으로 이동</small>}
               </button>
             ))}
           </nav>
-
-          <section className="update-panel" aria-live="polite">
-            <h1>업데이트</h1>
-            <p>{selectedItem.label} 내용이 표시될 공간</p>
-          </section>
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
   );
 }
 
@@ -88,14 +89,17 @@ function DrawingPage({ navigate }) {
   const [pendingText, setPendingText] = useState(null);
   const [canUndo, setCanUndo] = useState(false);
 
-  const prepareContext = useCallback((context, selectedTool) => {
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.globalCompositeOperation = "source-over";
-    context.strokeStyle = selectedTool === "eraser" ? "#ffffff" : "#111111";
-    context.fillStyle = "#111111";
-    context.lineWidth = brushSize;
-  }, [brushSize]);
+  const prepareContext = useCallback(
+    (context, selectedTool) => {
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.globalCompositeOperation = "source-over";
+      context.strokeStyle = selectedTool === "eraser" ? "#ffffff" : "#111111";
+      context.fillStyle = "#111111";
+      context.lineWidth = brushSize;
+    },
+    [brushSize],
+  );
 
   const saveHistory = useCallback(() => {
     const canvas = canvasRef.current;
