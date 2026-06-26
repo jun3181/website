@@ -29,53 +29,77 @@ function usePath() {
   return { path, navigate };
 }
 
-function HomePage({ navigate }) {
-  const [selectedId, setSelectedId] = useState(2);
-
+function BoardSidebar({ navigate, path, selectedId, setSelectedId }) {
   function selectItem(item) {
+    setSelectedId(item.id);
+
     if (item.id === 1) {
       navigate("/draw");
       return;
     }
 
-    setSelectedId(item.id);
+    navigate("/");
   }
 
+  const activeId = path === "/draw" ? 1 : selectedId;
+
+  return (
+    <aside className="board-sidebar" aria-labelledby="board-title">
+      <div className="board-heading">
+        <h1 id="board-title">게시판</h1>
+      </div>
+
+      <nav className="board-list" aria-label="게시판 목록">
+        {items.map((item) => (
+          <button
+            key={item.id}
+            className={`board-list-item ${
+              item.id === activeId ? "is-selected" : ""
+            }`}
+            type="button"
+            onClick={() => selectItem(item)}
+          >
+            <span>{item.label}</span>
+            {item.id === 1 && <small>draw</small>}
+          </button>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+function BlogLayout({ children, navigate, path, selectedId, setSelectedId }) {
   return (
     <div className="blog-page">
       <header className="blog-banner" aria-label="그림 배너">
         <img
-          src="/images/banner-focus.png"
-          alt="분홍색 방에서 쉬고 있는 캐릭터 배너"
+          src="/images/forest-banner.png"
+          alt="숲길 배경에 블로그 문구가 들어간 배너"
         />
       </header>
 
       <main className="blog-background">
-        <section className="list-section" aria-labelledby="list-title">
-          <div className="list-heading">
-            <h1 id="list-title">
-              전체 글 <span>(3)</span>
-            </h1>
-          </div>
-
-          <nav className="simple-list" aria-label="목록">
-            {items.map((item) => (
-              <button
-                key={item.id}
-                className={`simple-list-item ${
-                  item.id === selectedId ? "is-selected" : ""
-                }`}
-                type="button"
-                onClick={() => selectItem(item)}
-              >
-                <span>{item.label}</span>
-                {item.id === 1 && <small>그림판으로 이동</small>}
-              </button>
-            ))}
-          </nav>
-        </section>
+        <div className="content-layout">
+          <BoardSidebar
+            navigate={navigate}
+            path={path}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+          />
+          <div className="route-panel">{children}</div>
+        </div>
       </main>
     </div>
+  );
+}
+
+function HomePage({ selectedId }) {
+  const selectedItem = items.find((item) => item.id === selectedId) ?? items[1];
+
+  return (
+    <section className="home-panel" aria-labelledby="home-panel-title">
+      <h2 id="home-panel-title">{selectedItem.label}</h2>
+    </section>
   );
 }
 
@@ -313,7 +337,7 @@ function DrawingPage({ navigate }) {
   }
 
   return (
-    <main className="drawing-page">
+    <section className="drawing-page">
       <section className="drawing-app" aria-label="그림판">
         <header className="drawing-header">
           <button
@@ -421,16 +445,29 @@ function DrawingPage({ navigate }) {
             " — 캔버스를 클릭하고 글자를 입력한 뒤 Enter를 누르세요."}
         </p>
       </section>
-    </main>
+    </section>
   );
 }
 
 export default function App() {
   const { path, navigate } = usePath();
+  const [selectedId, setSelectedId] = useState(2);
 
-  if (path === "/draw") {
-    return <DrawingPage navigate={navigate} />;
-  }
+  const page =
+    path === "/draw" ? (
+      <DrawingPage navigate={navigate} />
+    ) : (
+      <HomePage selectedId={selectedId} />
+    );
 
-  return <HomePage navigate={navigate} />;
+  return (
+    <BlogLayout
+      navigate={navigate}
+      path={path}
+      selectedId={selectedId}
+      setSelectedId={setSelectedId}
+    >
+      {page}
+    </BlogLayout>
+  );
 }
