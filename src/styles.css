@@ -114,6 +114,10 @@ canvas {
   font-size: 16px;
 }
 
+.home-menu-button {
+  border-bottom: 1px solid rgba(32, 32, 32, 0.14);
+}
+
 .board-list-item {
   min-height: 36px;
   padding: 8px 12px 8px 30px;
@@ -155,6 +159,133 @@ canvas {
   font-size: 28px;
   line-height: 1.2;
   letter-spacing: 0;
+}
+
+.main-panel {
+  border: 1px solid rgba(32, 32, 32, 0.14);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 45px rgba(30, 30, 30, 0.08);
+  padding: 32px;
+}
+
+.main-header {
+  padding-bottom: 24px;
+  border-bottom: 2px solid #111111;
+}
+
+.main-header h2 {
+  margin: 4px 0 0;
+  font-size: 40px;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 18px;
+  margin-top: 22px;
+  align-items: start;
+}
+
+.main-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.main-card,
+.login-panel {
+  min-height: 150px;
+  border: 1px solid #dedede;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.main-card h3,
+.login-panel strong,
+.comment-section h3 {
+  display: block;
+  margin: 0 0 12px;
+  font-size: 1.08rem;
+}
+
+.main-card p {
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
+.recommended-song-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.youtube-frame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid #111111;
+  background: #000000;
+}
+
+.youtube-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.song-link {
+  color: #111111;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.song-link:hover,
+.song-link:focus-visible {
+  text-decoration: underline;
+}
+
+.main-card small,
+.login-panel p {
+  color: #666666;
+}
+
+.main-card-list {
+  display: grid;
+  gap: 8px;
+}
+
+.main-card-list button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+  text-align: left;
+}
+
+.visit-count {
+  font-size: 2.4rem;
+  font-weight: 900;
+}
+
+.login-form {
+  display: grid;
+  gap: 10px;
+}
+
+.login-form input,
+.comment-form textarea {
+  width: 100%;
+  border: 1px solid #d6d6d6;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.login-error {
+  margin: 0;
+  color: #c92a35;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .drawing-page {
@@ -258,7 +389,16 @@ canvas {
   line-height: 1.25;
 }
 
+.canvas-size {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .brush-size small,
+.canvas-size small,
 .undo-button small {
   margin-top: 3px;
   font-size: 0.67rem;
@@ -353,6 +493,15 @@ canvas {
     grid-template-columns: 1fr;
     gap: 22px;
     width: 100%;
+  }
+
+  .main-content,
+  .main-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-header h2 {
+    font-size: 32px;
   }
 
   .board-sidebar {
@@ -497,6 +646,10 @@ canvas {
   padding: 13px 18px;
 }
 
+.primary-button.is-locked {
+  background: #777777;
+}
+
 .post-list {
   display: grid;
   gap: 12px;
@@ -602,7 +755,7 @@ canvas {
 }
 
 .title-input,
-.body-canvas-stack {
+.editor-blocks {
   display: block;
   width: 78%;
   margin: 0 auto;
@@ -622,39 +775,72 @@ canvas {
   font-size: 2.2rem;
 }
 
-.body-canvas-stack {
-  position: relative;
+.editor-blocks {
+  display: grid;
+  gap: 14px;
   margin-top: 34px;
 }
 
-.body-canvas-stack.is-painting {
-  min-height: 420px;
+.editor-block {
+  min-width: 0;
+}
+
+.editor-block.is-drag-over {
+  outline: 3px solid #f3a8d0;
+  outline-offset: 8px;
 }
 
 .body-input {
   display: block;
   width: 100%;
-  min-height: 220px;
+  min-height: 44px;
   margin: 0;
-  resize: vertical;
+  overflow: hidden;
+  resize: none;
   line-height: 1.8;
 }
 
-.body-canvas-stack.is-painting .body-input {
-  min-height: 420px;
-  resize: none;
-  visibility: hidden;
+.editor-text-block {
+  padding: 0;
 }
 
-.body-canvas-stack.has-saved-drawing .body-input {
-  margin-top: 28px;
+.editor-drawing-block {
+  min-width: 0;
+}
+
+.editor-image-frame {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: #eeeeee;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.editor-image-frame:active,
+.saved-drawing-frame:active {
+  cursor: grabbing;
+}
+
+.editor-image-block {
+  display: block;
+  width: 100%;
+  max-height: 560px;
+  border: 2px solid #000000;
+  background: #ffffff;
+  object-fit: contain;
 }
 
 .saved-drawing-frame {
+  display: block;
   width: 100%;
-  height: 420px;
   padding: 16px;
+  border: 0;
   background: #eeeeee;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
 .saved-drawing-image {
@@ -664,6 +850,42 @@ canvas {
   border: 2px solid #000000;
   background: #ffffff;
   object-fit: fill;
+}
+
+.saved-drawing-frame:hover .saved-drawing-image,
+.saved-drawing-frame:focus-visible .saved-drawing-image {
+  outline: 3px solid #f3a8d0;
+  outline-offset: -5px;
+}
+
+.post-drawing-frame {
+  width: 78%;
+  margin: 24px auto 0;
+  padding: 16px;
+  background: #eeeeee;
+}
+
+.post-drawing-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #000000;
+  background: #ffffff;
+  object-fit: fill;
+}
+
+.post-image-block {
+  display: block;
+  width: 78%;
+  max-height: 640px;
+  margin: 24px auto 0;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  object-fit: contain;
+}
+
+.post-content-block {
+  white-space: pre-wrap;
 }
 
 .attached-image,
@@ -694,9 +916,11 @@ canvas {
 
   .paper,
   .title-input,
-  .body-canvas-stack,
+  .editor-blocks,
   .body-input,
   .attached-image,
+  .post-image-block,
+  .post-drawing-frame,
   .inline-canvas {
     width: 100%;
   }
@@ -709,6 +933,10 @@ canvas {
 .post-card {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+}
+
+.post-card.without-actions {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .post-open-button {
@@ -743,6 +971,53 @@ canvas {
   gap: 12px;
 }
 
+.comment-section {
+  margin-top: 34px;
+  padding-top: 24px;
+  border-top: 2px solid #111111;
+}
+
+.comment-form {
+  display: grid;
+  gap: 10px;
+}
+
+.comment-form textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.comment-form .publish-button {
+  justify-self: end;
+}
+
+.comment-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.comment-item {
+  border: 1px solid #dedede;
+  background: #ffffff;
+  padding: 12px 14px;
+}
+
+.comment-item p,
+.empty-comments {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.comment-item small {
+  color: #777777;
+}
+
+.login-required {
+  display: grid;
+  gap: 12px;
+}
+
 .is-paint-mode .paper,
 .has-board-drawing .paper {
   width: min(1200px, calc(100% - 32px));
@@ -751,6 +1026,7 @@ canvas {
 .paint-toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   padding: 14px 18px;
   border-bottom: 2px solid #111111;
@@ -758,9 +1034,7 @@ canvas {
 }
 
 .board-canvas-frame {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
+  position: relative;
   width: 100%;
   padding: 16px;
   background: #eeeeee;
