@@ -442,7 +442,7 @@ function EditorPage({ category, onCreate, navigate }) {
   return (
     <section className={`editor-page ${paintMode ? "is-paint-mode" : ""}`} aria-labelledby="editor-title">
       <div className="editor-topbar">
-        <strong>N blog 참고 기능 에디터</strong>
+        <strong>게시판</strong>
         <div>
           <button className="text-button" type="button" onClick={() => navigate(`/boards/${category.id}`)}>취소</button>
           <button className="publish-button" type="button" onClick={submitPost}>발행</button>
