@@ -58,7 +58,7 @@ canvas {
 
 .blog-background {
   min-height: calc(100vh - var(--banner-height));
-  padding: 28px 24px 96px;
+  padding: 28px 24px 96px 0;
   background-color: #fff7fb;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.88)),
@@ -71,10 +71,10 @@ canvas {
 
 .content-layout {
   display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 16px;
-  width: min(1180px, 100%);
-  margin: 0 auto;
+  width: min(1220px, calc(100% - 24px));
+  margin: 0 auto 0 0;
   align-items: start;
 }
 
@@ -83,36 +83,23 @@ canvas {
   top: 16px;
 }
 
-.board-heading {
-  border-bottom: 2px solid #292929;
-}
-
-.board-heading h1 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: 0;
-}
-
+.menu-list,
 .board-list {
   display: flex;
   flex-direction: column;
 }
 
-.board-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  min-height: 42px;
-  padding: 10px 8px;
-  border: 0;
+.menu-group {
   border-bottom: 1px solid rgba(32, 32, 32, 0.14);
+}
+
+.menu-title,
+.board-list-item {
+  width: 100%;
+  border: 0;
   border-radius: 0;
   color: #111111;
-  background: rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.58);
   cursor: pointer;
   font-weight: 700;
   text-align: left;
@@ -121,18 +108,24 @@ canvas {
     background 120ms ease;
 }
 
+.menu-title {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+.board-list-item {
+  min-height: 36px;
+  padding: 8px 12px 8px 30px;
+}
+
 .board-list-item span {
   font-size: 14px;
   line-height: 1.2;
 }
 
-.board-list-item small {
-  flex: 0 0 auto;
-  color: #ff3c76;
-  font-size: 11px;
-  font-weight: 700;
-}
-
+.menu-title:hover,
+.menu-title:focus-visible,
 .board-list-item:hover,
 .board-list-item:focus-visible,
 .board-list-item.is-selected {
@@ -140,12 +133,7 @@ canvas {
   background: #111111;
 }
 
-.board-list-item:hover small,
-.board-list-item:focus-visible small,
-.board-list-item.is-selected small {
-  color: #ffffff;
-}
-
+.menu-title:focus-visible,
 .board-list-item:focus-visible {
   outline: 3px solid #111111;
   outline-offset: 4px;
@@ -364,6 +352,7 @@ canvas {
   .content-layout {
     grid-template-columns: 1fr;
     gap: 22px;
+    width: 100%;
   }
 
   .board-sidebar {
