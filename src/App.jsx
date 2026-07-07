@@ -48,6 +48,20 @@ const fonts = [
   { label: "둥근", value: "'Trebuchet MS', 'Noto Sans KR', sans-serif" },
 ];
 
+const POSTS_STORAGE_KEY = "stack-chat-board-posts";
+
+function loadStoredPosts() {
+  const storedPosts = window.localStorage.getItem(POSTS_STORAGE_KEY);
+  if (!storedPosts) return initialPosts;
+
+  try {
+    const parsedPosts = JSON.parse(storedPosts);
+    return Array.isArray(parsedPosts) ? parsedPosts : initialPosts;
+  } catch {
+    return initialPosts;
+  }
+}
+
 function usePath() {
   const [path, setPath] = useState(window.location.pathname);
 
@@ -264,7 +278,11 @@ function EditorPage({ category, onCreate, navigate }) {
 
 export default function App() {
   const { path, navigate } = usePath();
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState(loadStoredPosts);
+
+  useEffect(() => {
+    window.localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+  }, [posts]);
   const categoryFromPath = path.match(/^\/boards\/([^/]+)/)?.[1];
   const detailId = path.match(/^\/(\d+)/)?.[1];
   const activeCategoryId = categoryFromPath || posts.find((post) => String(post.id) === detailId)?.categoryId || "daily";
