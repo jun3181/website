@@ -663,3 +663,40 @@ canvas {
     padding: 32px 18px;
   }
 }
+
+.post-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.post-open-button {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.delete-button {
+  border: 1px solid #e15b64;
+  color: #c92a35;
+  background: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 9px 13px;
+}
+
+.delete-button:hover,
+.delete-button:focus-visible {
+  color: #ffffff;
+  background: #c92a35;
+}
+
+.post-detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

@@ -116,7 +116,7 @@ function BlogLayout({ children, activeCategoryId, navigate }) {
   );
 }
 
-function BoardListPage({ category, posts, navigate }) {
+function BoardListPage({ category, posts, navigate, onDeletePost }) {
   return (
     <section className="board-panel" aria-labelledby="board-page-title">
       <div className="board-panel-header">
@@ -131,21 +131,29 @@ function BoardListPage({ category, posts, navigate }) {
 
       <div className="post-list" aria-label={`${category.label} 글 목록`}>
         {posts.map((post) => (
-          <button key={post.id} className="post-card" type="button" onClick={() => navigate(`/${post.id}`)}>
-            <strong>{post.title}</strong>
-            <span>{post.excerpt}</span>
-            <small>{post.author} · {post.createdAt}</small>
-          </button>
+          <article key={post.id} className="post-card">
+            <button className="post-open-button" type="button" onClick={() => navigate(`/${post.id}`)}>
+              <strong>{post.title}</strong>
+              <span>{post.excerpt}</span>
+              <small>{post.author} · {post.createdAt}</small>
+            </button>
+            <button className="delete-button" type="button" onClick={() => onDeletePost(post)}>
+              삭제
+            </button>
+          </article>
         ))}
       </div>
     </section>
   );
 }
 
-function PostDetailPage({ post, navigate }) {
+function PostDetailPage({ post, navigate, onDeletePost }) {
   return (
     <article className="board-panel post-detail">
-      <button className="text-button" type="button" onClick={() => navigate(`/boards/${post.categoryId}`)}>← 목록으로</button>
+      <div className="post-detail-actions">
+        <button className="text-button" type="button" onClick={() => navigate(`/boards/${post.categoryId}`)}>← 목록으로</button>
+        <button className="delete-button" type="button" onClick={() => onDeletePost(post)}>삭제</button>
+      </div>
       <h2>{post.title}</h2>
       <p className="post-meta">{post.author} · {post.createdAt}</p>
       <p>{post.content}</p>
@@ -262,14 +270,22 @@ export default function App() {
   const activeCategoryId = categoryFromPath || posts.find((post) => String(post.id) === detailId)?.categoryId || "daily";
   const activeCategory = categories.find((category) => category.id === activeCategoryId) || categories[0];
 
+  const deletePost = useCallback((post) => {
+    const confirmed = window.confirm(`"${post.title}" 게시글을 삭제할까요?`);
+    if (!confirmed) return;
+
+    setPosts((currentPosts) => currentPosts.filter((currentPost) => currentPost.id !== post.id));
+    navigate(`/boards/${post.categoryId}`);
+  }, [navigate]);
+
   const page = useMemo(() => {
     if (path.endsWith("/new")) return <EditorPage category={activeCategory} onCreate={(post) => setPosts((current) => [post, ...current])} navigate={navigate} />;
     if (detailId) {
       const post = posts.find((item) => String(item.id) === detailId);
-      return post ? <PostDetailPage post={post} navigate={navigate} /> : <BoardListPage category={activeCategory} posts={posts.filter((postItem) => postItem.categoryId === activeCategory.id)} navigate={navigate} />;
+      return post ? <PostDetailPage post={post} navigate={navigate} onDeletePost={deletePost} /> : <BoardListPage category={activeCategory} posts={posts.filter((postItem) => postItem.categoryId === activeCategory.id)} navigate={navigate} onDeletePost={deletePost} />;
     }
-    return <BoardListPage category={activeCategory} posts={posts.filter((post) => post.categoryId === activeCategory.id)} navigate={navigate} />;
-  }, [activeCategory, detailId, navigate, path, posts]);
+    return <BoardListPage category={activeCategory} posts={posts.filter((post) => post.categoryId === activeCategory.id)} navigate={navigate} onDeletePost={deletePost} />;
+  }, [activeCategory, deletePost, detailId, navigate, path, posts]);
 
   return <BlogLayout activeCategoryId={activeCategory.id} navigate={navigate}>{page}</BlogLayout>;
 }
