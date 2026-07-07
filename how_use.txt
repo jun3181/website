@@ -1,5 +1,13 @@
-설치
-winget install OpenJS.NodeJS.LTS
+실행 방법
 
-npm run dev
-http://127.0.0.1:5173/
+1. 이 폴더에서 PowerShell을 엽니다.
+2. 서버를 시작합니다.
+
+   py start.py
+
+3. 브라우저에서 접속합니다.
+
+   http://ksjblog.host/main/
+
+다른 기기에서 접속하려면 ksjblog.host가 이 PC의 IP를 가리켜야 합니다.
+서버를 끄려면 터미널에서 Ctrl+C를 누릅니다.

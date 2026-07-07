@@ -26,6 +26,12 @@ BASE_PATH = "/main/"
 ROOT_DIR = Path(__file__).resolve().parent
 DIST_DIR = ROOT_DIR / "dist"
 NODE_MODULES_DIR = ROOT_DIR / "node_modules"
+NODE_PATHS = (
+    Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages",
+    Path(os.environ.get("PROGRAMFILES", "")) / "nodejs",
+    Path(os.environ.get("PROGRAMFILES(X86)", "")) / "nodejs",
+    Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "nodejs",
+)
 
 
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
@@ -128,12 +134,35 @@ def run_command(command: list[str]) -> None:
     subprocess.run(command, cwd=ROOT_DIR, check=True)
 
 
+def find_npm() -> str | None:
+    npm = shutil.which("npm") or shutil.which("npm.cmd")
+    if npm is not None:
+        return npm
+
+    for node_path in NODE_PATHS:
+        if not node_path.exists():
+            continue
+
+        candidates = []
+        if node_path.is_dir():
+            candidates.extend(node_path.glob("npm.cmd"))
+            candidates.extend(node_path.glob("**/npm.cmd"))
+
+        for candidate in candidates:
+            node_exe = candidate.parent / "node.exe"
+            if node_exe.exists():
+                os.environ["PATH"] = f"{candidate.parent}{os.pathsep}{os.environ.get('PATH', '')}"
+                return str(candidate)
+
+    return None
+
+
 def prepare_dist(no_build: bool, no_install: bool) -> None:
     if no_build:
         ensure_dist_exists()
         return
 
-    npm = shutil.which("npm")
+    npm = find_npm()
     if npm is None:
         print("npm was not found. Serving the existing dist folder instead.")
         ensure_dist_exists()
@@ -172,20 +201,25 @@ def get_lan_ip() -> str | None:
     return candidate
 
 
+def port_candidates(preferred_port: int) -> list[int]:
+    ports = list(range(preferred_port, preferred_port + 20))
+    if preferred_port < 1024:
+        ports.extend(range(8000, 8020))
+    return list(dict.fromkeys(ports))
+
+
 def make_server(host: str, preferred_port: int) -> tuple[ReusableThreadingHTTPServer, int]:
     handler = functools.partial(WebsiteHandler, directory=str(DIST_DIR))
 
-    for port in range(preferred_port, preferred_port + 20):
+    for port in port_candidates(preferred_port):
         try:
             return ReusableThreadingHTTPServer((host, port), handler), port
         except OSError as exc:
-            if exc.errno in (errno.EADDRINUSE, 10048):
+            if exc.errno in (errno.EACCES, errno.EADDRINUSE, 10013, 10048):
                 continue
             raise
 
-    raise SystemExit(
-        f"No available port found from {preferred_port} to {preferred_port + 19}."
-    )
+    raise SystemExit("No available port found for the website server.")
 
 
 def get_public_url(public_hostname: str, port: int) -> str:
