@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const categories = [
-  { id: "daily", label: "일상 게시판", description: "하루의 이야기와 생각을 나누는 공간" },
-  { id: "health", label: "헬스", description: "운동 루틴, 식단, 회복 팁을 공유해요" },
-  { id: "dev", label: "개발 게시판", description: "개발 기록과 질문을 정리하는 공간" },
+  { id: "daily", label: "일상 게시판" },
+  { id: "health", label: "헬스" },
+  { id: "dev", label: "개발 게시판" },
+];
+
+const menuGroups = [
+  { id: 1, label: "게시판", type: "boards" },
+  { id: 2, label: "다른 목록", type: "placeholder" },
+  { id: 3, label: "다른 목록", type: "placeholder" },
 ];
 
 const initialPosts = [
@@ -61,21 +67,33 @@ function usePath() {
 
 function BoardSidebar({ activeCategoryId, navigate }) {
   return (
-    <aside className="board-sidebar" aria-labelledby="board-title">
-      <div className="board-heading">
-        <h1 id="board-title">게시판</h1>
-      </div>
-      <nav className="board-list" aria-label="게시판 세부 목록">
-        {categories.map((category) => (
-          <button
-            key={category.id}
-            className={`board-list-item ${category.id === activeCategoryId ? "is-selected" : ""}`}
-            type="button"
-            onClick={() => navigate(`/boards/${category.id}`)}
-          >
-            <span>{category.label}</span>
-            <small>{category.description}</small>
-          </button>
+    <aside className="board-sidebar" aria-label="왼쪽 메뉴">
+      <nav className="menu-list" aria-label="전체 목록">
+        {menuGroups.map((group) => (
+          <section className="menu-group" key={`${group.id}-${group.label}`}>
+            <button
+              className="menu-title"
+              type="button"
+              onClick={() => group.type === "boards" && navigate("/boards/daily")}
+            >
+              <span>{group.id}. {group.label}</span>
+            </button>
+
+            {group.type === "boards" && (
+              <div className="board-list" aria-label="게시판 세부 목록">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    className={`board-list-item ${category.id === activeCategoryId ? "is-selected" : ""}`}
+                    type="button"
+                    onClick={() => navigate(`/boards/${category.id}`)}
+                  >
+                    <span>- {category.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
         ))}
       </nav>
     </aside>
@@ -105,7 +123,6 @@ function BoardListPage({ category, posts, navigate }) {
         <div>
           <p className="eyebrow">게시판 세부 목록</p>
           <h2 id="board-page-title">{category.label}</h2>
-          <p>{category.description}</p>
         </div>
         <button className="primary-button" type="button" onClick={() => navigate(`/boards/${category.id}/new`)}>
           게시판 생성
