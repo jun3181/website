@@ -62,7 +62,7 @@ canvas {
   background-color: #fff7fb;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.88)),
-    url("/images/site-background.webp");
+    url("/images/background.png");
   background-position: center top;
   background-repeat: no-repeat;
   background-size: cover;
@@ -602,10 +602,14 @@ canvas {
 }
 
 .title-input,
-.body-input {
+.body-canvas-stack {
   display: block;
   width: 78%;
   margin: 0 auto;
+}
+
+.title-input,
+.body-input {
   border: 0;
   outline: 0;
   color: #333333;
@@ -618,11 +622,28 @@ canvas {
   font-size: 2.2rem;
 }
 
-.body-input {
-  min-height: 220px;
+.body-canvas-stack {
+  position: relative;
   margin-top: 34px;
+}
+
+.body-canvas-stack.is-painting {
+  min-height: 420px;
+}
+
+.body-input {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  margin: 0;
   resize: vertical;
   line-height: 1.8;
+}
+
+.body-canvas-stack.is-painting .body-input {
+  min-height: 420px;
+  resize: none;
+  visibility: hidden;
 }
 
 .attached-image,
@@ -653,6 +674,7 @@ canvas {
 
   .paper,
   .title-input,
+  .body-canvas-stack,
   .body-input,
   .attached-image,
   .inline-canvas {
@@ -715,9 +737,10 @@ canvas {
 }
 
 .board-canvas-frame {
-  position: relative;
+  position: absolute;
+  z-index: 1;
+  inset: 0;
   width: 100%;
-  margin: 28px auto 0;
   padding: 16px;
   background: #eeeeee;
 }
@@ -725,7 +748,7 @@ canvas {
 .board-canvas-frame .drawing-canvas {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 
 @media (max-width: 640px) {

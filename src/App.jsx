@@ -477,15 +477,17 @@ function EditorPage({ category, onCreate, navigate }) {
       <div className="paper">
         <input id="editor-title" className="title-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="제목" />
         {image && <img className="attached-image" src={image} alt="첨부 미리보기" />}
-        <textarea className="body-input" style={{ fontFamily, fontSize: `${fontSize}px` }} value={body} onChange={(event) => setBody(event.target.value)} placeholder="글을 입력하세요" />
-        {paintMode && (
-          <div className="board-canvas-frame">
-            <canvas ref={canvasRef} className={`drawing-canvas tool-${tool}`} width="1200" height="720" tabIndex="0" aria-label="게시판 전체 그림판" onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerCancel={stopDrawing} onPointerLeave={stopDrawing} />
-            {pendingText && (
-              <input ref={textInputRef} className="canvas-text-input" type="text" maxLength="40" aria-label="캔버스 텍스트 입력" placeholder="입력 후 Enter" value={pendingText.value} style={{ left: pendingText.displayX, top: pendingText.displayY }} onChange={(event) => setPendingText((currentText) => ({ ...currentText, value: event.target.value }))} onKeyDown={handleTextKeyDown} />
-            )}
-          </div>
-        )}
+        <div className={paintMode ? "body-canvas-stack is-painting" : "body-canvas-stack"}>
+          <textarea className="body-input" style={{ fontFamily, fontSize: `${fontSize}px` }} value={body} onChange={(event) => setBody(event.target.value)} placeholder="글을 입력하세요" readOnly={paintMode} />
+          {paintMode && (
+            <div className="board-canvas-frame">
+              <canvas ref={canvasRef} className={`drawing-canvas tool-${tool}`} width="1200" height="720" tabIndex="0" aria-label="게시판 전체 그림판" onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerCancel={stopDrawing} onPointerLeave={stopDrawing} />
+              {pendingText && (
+                <input ref={textInputRef} className="canvas-text-input" type="text" maxLength="40" aria-label="캔버스 텍스트 입력" placeholder="입력 후 Enter" value={pendingText.value} style={{ left: pendingText.displayX, top: pendingText.displayY }} onChange={(event) => setPendingText((currentText) => ({ ...currentText, value: event.target.value }))} onKeyDown={handleTextKeyDown} />
+              )}
+            </div>
+          )}
+        </div>
         {!paintMode && drawingSaved && <img className="attached-image" src={drawingSaved} alt="그림판으로 작성한 그림" />}
       </div>
     </section>
