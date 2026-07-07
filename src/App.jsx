@@ -191,8 +191,20 @@ function loadStoredPosts() {
   }
 }
 
+const APP_BASE_PATH = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+
 function normalizePath(pathname) {
-  return pathname.replace(/^\/website(?=\/|$)/, "") || "/";
+  if (APP_BASE_PATH && pathname.startsWith(APP_BASE_PATH)) {
+    return pathname.slice(APP_BASE_PATH.length) || "/";
+  }
+
+  return pathname.replace(/^\/(?:website|ksjblog|main)(?=\/|$)/, "") || "/";
+}
+
+function getBrowserPath(nextPath) {
+  if (!APP_BASE_PATH) return nextPath;
+  if (nextPath === "/") return APP_BASE_PATH || "/";
+  return `${APP_BASE_PATH}${nextPath}`;
 }
 
 function usePath() {
@@ -205,7 +217,7 @@ function usePath() {
   }, []);
 
   const navigate = useCallback((nextPath) => {
-    window.history.pushState({}, "", nextPath);
+    window.history.pushState({}, "", getBrowserPath(nextPath));
     setPath(nextPath);
   }, []);
 
@@ -417,14 +429,16 @@ function BoardListPage({ category, posts, navigate, onDeletePost, isLoggedIn }) 
 function PostDetailPage({ post, navigate, onDeletePost, onAddComment, isLoggedIn }) {
   const postBlocks = getPostBlocks(post);
   const comments = Array.isArray(post.comments) ? post.comments : [];
+  const [nickname, setNickname] = useState("");
   const [comment, setComment] = useState("");
 
   function submitComment(event) {
     event.preventDefault();
+    const nextNickname = nickname.trim() || "익명";
     const nextComment = comment.trim();
     if (!nextComment) return;
 
-    onAddComment(post.id, nextComment);
+    onAddComment(post.id, nextNickname, nextComment);
     setComment("");
   }
 
@@ -450,6 +464,7 @@ function PostDetailPage({ post, navigate, onDeletePost, onAddComment, isLoggedIn
       <section className="comment-section" aria-label="댓글">
         <h3>댓글</h3>
         <form className="comment-form" onSubmit={submitComment}>
+          <input value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="닉네임" aria-label="댓글 닉네임" />
           <textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="댓글을 입력하세요" aria-label="댓글 입력" />
           <button className="publish-button" type="submit">댓글 등록</button>
         </form>
@@ -457,7 +472,7 @@ function PostDetailPage({ post, navigate, onDeletePost, onAddComment, isLoggedIn
           {comments.length > 0 ? comments.map((item) => (
             <article className="comment-item" key={item.id}>
               <p>{item.content}</p>
-              <small>{item.createdAt}</small>
+              <small>{item.nickname || "익명"} · {item.createdAt}</small>
             </article>
           )) : <p className="empty-comments">아직 댓글이 없습니다.</p>}
         </div>
@@ -1104,12 +1119,13 @@ export default function App() {
     navigate(`/boards/${post.categoryId}`);
   }, [navigate]);
 
-  const addComment = useCallback((postId, content) => {
+  const addComment = useCallback((postId, nickname, content) => {
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
 
       const nextComment = {
         id: Date.now(),
+        nickname,
         content,
         createdAt: new Date().toLocaleString("ko-KR"),
       };
