@@ -48,6 +48,12 @@ const fonts = [
   { label: "둥근", value: "'Trebuchet MS', 'Noto Sans KR', sans-serif" },
 ];
 
+const drawingTools = [
+  { id: "brush", label: "브러쉬", shortcut: "B" },
+  { id: "eraser", label: "지우개", shortcut: "E" },
+  { id: "text", label: "텍스트", shortcut: "T" },
+];
+
 const POSTS_STORAGE_KEY = "stack-chat-board-posts";
 
 function loadStoredPosts() {
@@ -170,7 +176,9 @@ function PostDetailPage({ post, navigate, onDeletePost }) {
       </div>
       <h2>{post.title}</h2>
       <p className="post-meta">{post.author} · {post.createdAt}</p>
+      {post.image && <img className="attached-image" src={post.image} alt="첨부 이미지" />}
       <p>{post.content}</p>
+      {post.drawing && <img className="attached-image" src={post.drawing} alt="그림판으로 작성한 그림" />}
     </article>
   );
 }
@@ -178,6 +186,8 @@ function PostDetailPage({ post, navigate, onDeletePost }) {
 function EditorPage({ category, onCreate, navigate }) {
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
+  const historyRef = useRef([]);
+  const textInputRef = useRef(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [fontFamily, setFontFamily] = useState(fonts[0].value);
@@ -185,21 +195,109 @@ function EditorPage({ category, onCreate, navigate }) {
   const [image, setImage] = useState("");
   const [paintMode, setPaintMode] = useState(false);
   const [drawingSaved, setDrawingSaved] = useState("");
+  const [tool, setTool] = useState("brush");
+  const [brushSize, setBrushSize] = useState(8);
+  const [pendingText, setPendingText] = useState(null);
+  const [canUndo, setCanUndo] = useState(false);
+
+  const prepareContext = useCallback((context, selectedTool) => {
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.globalCompositeOperation = "source-over";
+    context.strokeStyle = selectedTool === "eraser" ? "#ffffff" : "#111111";
+    context.fillStyle = "#111111";
+    context.lineWidth = brushSize;
+  }, [brushSize]);
+
+  const saveHistory = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext("2d");
+    historyRef.current.push(context.getImageData(0, 0, canvas.width, canvas.height));
+    if (historyRef.current.length > 20) historyRef.current.shift();
+    setCanUndo(true);
+  }, []);
+
+  const undo = useCallback(() => {
+    const canvas = canvasRef.current;
+    const previousImage = historyRef.current.pop();
+    if (!canvas || !previousImage) return;
+
+    canvas.getContext("2d").putImageData(previousImage, 0, 0);
+    setCanUndo(historyRef.current.length > 0);
+    setPendingText(null);
+    canvas.focus();
+  }, []);
 
   useEffect(() => {
     if (!paintMode || !canvasRef.current) return;
-    const context = canvasRef.current.getContext("2d");
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.lineWidth = 5;
-    context.strokeStyle = "#111111";
-  }, [paintMode]);
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (drawingSaved) {
+      const savedImage = new Image();
+      savedImage.onload = () => context.drawImage(savedImage, 0, 0, canvas.width, canvas.height);
+      savedImage.src = drawingSaved;
+    }
+
+    canvas.focus();
+  }, [drawingSaved, paintMode]);
+
+  useEffect(() => {
+    textInputRef.current?.focus();
+  }, [pendingText]);
+
+  useEffect(() => {
+    if (!paintMode) return undefined;
+
+    function handleKeyDown(event) {
+      const target = event.target;
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement;
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        undo();
+        return;
+      }
+
+      if (isTyping) return;
+
+      const shortcut = event.key.toLowerCase();
+      if (shortcut === "b") {
+        setPendingText(null);
+        setTool("brush");
+      }
+      if (shortcut === "e") {
+        setPendingText(null);
+        setTool("eraser");
+      }
+      if (shortcut === "t") setTool("text");
+
+      if ((tool === "brush" || tool === "eraser") && event.code === "BracketLeft") {
+        event.preventDefault();
+        setBrushSize((currentSize) => Math.max(2, currentSize - 2));
+      }
+
+      if ((tool === "brush" || tool === "eraser") && event.code === "BracketRight") {
+        event.preventDefault();
+        setBrushSize((currentSize) => Math.min(60, currentSize + 2));
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [paintMode, tool, undo]);
 
   function togglePaintMode() {
     if (paintMode && canvasRef.current) {
       const keep = window.confirm("그림판 모드를 끄면 그린 내용이 본문에 남습니다. 계속 남기겠습니까?");
       if (keep) setDrawingSaved(canvasRef.current.toDataURL("image/png"));
       else setDrawingSaved("");
+      setPendingText(null);
     }
     setPaintMode((current) => !current);
   }
@@ -207,32 +305,122 @@ function EditorPage({ category, onCreate, navigate }) {
   function getPoint(event) {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    return { x: ((event.clientX - rect.left) / rect.width) * canvas.width, y: ((event.clientY - rect.top) / rect.height) * canvas.height };
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+    };
   }
 
   function startDrawing(event) {
     const canvas = canvasRef.current;
-    const point = getPoint(event);
     const context = canvas.getContext("2d");
+    const point = getPoint(event);
+    canvas.focus();
+
+    if (tool === "text") {
+      const frameRect = canvas.parentElement.getBoundingClientRect();
+      setPendingText({
+        canvasX: point.x,
+        canvasY: point.y,
+        displayX: event.clientX - frameRect.left,
+        displayY: event.clientY - frameRect.top,
+        value: "",
+      });
+      return;
+    }
+
+    saveHistory();
     drawingRef.current = true;
     canvas.setPointerCapture(event.pointerId);
+    prepareContext(context, tool);
     context.beginPath();
     context.moveTo(point.x, point.y);
+    context.lineTo(point.x + 0.1, point.y + 0.1);
+    context.stroke();
   }
 
   function draw(event) {
-    if (!drawingRef.current) return;
-    const context = canvasRef.current.getContext("2d");
+    if (!drawingRef.current || tool === "text") return;
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
     const point = getPoint(event);
+
+    prepareContext(context, tool);
     context.lineTo(point.x, point.y);
     context.stroke();
   }
 
   function stopDrawing(event) {
     if (!drawingRef.current) return;
+
     drawingRef.current = false;
-    canvasRef.current.getContext("2d").closePath();
-    if (canvasRef.current.hasPointerCapture(event.pointerId)) canvasRef.current.releasePointerCapture(event.pointerId);
+    const canvas = canvasRef.current;
+    canvas.getContext("2d").closePath();
+    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+  }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    saveHistory();
+    context.globalCompositeOperation = "source-over";
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    setPendingText(null);
+    canvas.focus();
+  }
+
+  function selectTool(nextTool) {
+    setPendingText(null);
+    setTool(nextTool);
+  }
+
+  function commitText() {
+    const value = pendingText?.value.trim();
+    if (!value) {
+      setPendingText(null);
+      canvasRef.current?.focus();
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    saveHistory();
+    prepareContext(context, "text");
+    context.font = `${Math.max(18, fontSize * 2)}px Arial, sans-serif`;
+    context.textBaseline = "top";
+    context.fillText(value, pendingText.canvasX, pendingText.canvasY);
+    setPendingText(null);
+    canvas.focus();
+  }
+
+  function handleTextKeyDown(event) {
+    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      commitText();
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setPendingText(null);
+      canvasRef.current?.focus();
+    }
+  }
+
+  function exportPng() {
+    canvasRef.current.toBlob((blob) => {
+      if (!blob) return;
+
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.download = `board-drawing-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, "image/png");
   }
 
   function handleImage(event) {
@@ -246,14 +434,15 @@ function EditorPage({ category, onCreate, navigate }) {
   function submitPost() {
     if (!title.trim()) return;
     const id = Date.now();
-    onCreate({ id, categoryId: category.id, title, author: "작성자", createdAt: new Date().toLocaleDateString("ko-KR"), excerpt: body.slice(0, 56) || "새 글입니다.", content: body });
+    const drawing = paintMode && canvasRef.current ? canvasRef.current.toDataURL("image/png") : drawingSaved;
+    onCreate({ id, categoryId: category.id, title, author: "작성자", createdAt: new Date().toLocaleDateString("ko-KR"), excerpt: body.slice(0, 56) || "새 글입니다.", content: body, image, drawing });
     navigate(`/${id}`);
   }
 
   return (
-    <section className="editor-page" aria-labelledby="editor-title">
+    <section className={`editor-page ${paintMode ? "is-paint-mode" : ""}`} aria-labelledby="editor-title">
       <div className="editor-topbar">
-        <strong>게시판</strong>
+        <strong>N blog 참고 기능 에디터</strong>
         <div>
           <button className="text-button" type="button" onClick={() => navigate(`/boards/${category.id}`)}>취소</button>
           <button className="publish-button" type="button" onClick={submitPost}>발행</button>
@@ -262,14 +451,41 @@ function EditorPage({ category, onCreate, navigate }) {
       <div className="editor-toolbar" aria-label="작성 도구">
         <label>사진<input type="file" accept="image/*" onChange={handleImage} /></label>
         <label>글꼴<select value={fontFamily} onChange={(event) => setFontFamily(event.target.value)}>{fonts.map((font) => <option key={font.label} value={font.value}>{font.label}</option>)}</select></label>
-        <label>글자크기<input type="number" min="12" max="48" value={fontSize} onChange={(event) => setFontSize(event.target.value)} /></label>
+        <label>글자크기<input type="number" min="12" max="48" value={fontSize} onChange={(event) => setFontSize(Number(event.target.value))} /></label>
         <button className={paintMode ? "tool-toggle is-on" : "tool-toggle"} type="button" onClick={togglePaintMode}>그림판 모드 {paintMode ? "끄기" : "켜기"}</button>
       </div>
+
+      {paintMode && (
+        <div className="paint-toolbar" aria-label="그림판 도구">
+          <div className="tool-buttons">
+            {drawingTools.map((item) => (
+              <button key={item.id} className={`tool-button ${tool === item.id ? "is-active" : ""}`} type="button" aria-pressed={tool === item.id} onClick={() => selectTool(item.id)}>
+                <kbd>{item.shortcut}</kbd>
+                {item.label}
+              </button>
+            ))}
+          </div>
+          {(tool === "brush" || tool === "eraser") && <span className="brush-size">크기 {brushSize}px <small>[ 작게 · ] 크게</small></span>}
+          <div className="toolbar-actions">
+            <button className="undo-button" type="button" disabled={!canUndo} onClick={undo}>실행 취소<small>Ctrl+Z</small></button>
+            <button className="clear-canvas-button" type="button" onClick={clearCanvas}>전체 지우기</button>
+            <button className="export-button" type="button" onClick={exportPng}>PNG 내보내기</button>
+          </div>
+        </div>
+      )}
+
       <div className="paper">
         <input id="editor-title" className="title-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="제목" />
         {image && <img className="attached-image" src={image} alt="첨부 미리보기" />}
         <textarea className="body-input" style={{ fontFamily, fontSize: `${fontSize}px` }} value={body} onChange={(event) => setBody(event.target.value)} placeholder="글을 입력하세요" />
-        {paintMode && <canvas ref={canvasRef} className="inline-canvas" width="900" height="320" onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerCancel={stopDrawing} />}
+        {paintMode && (
+          <div className="board-canvas-frame">
+            <canvas ref={canvasRef} className={`drawing-canvas tool-${tool}`} width="1200" height="720" tabIndex="0" aria-label="게시판 전체 그림판" onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerCancel={stopDrawing} onPointerLeave={stopDrawing} />
+            {pendingText && (
+              <input ref={textInputRef} className="canvas-text-input" type="text" maxLength="40" aria-label="캔버스 텍스트 입력" placeholder="입력 후 Enter" value={pendingText.value} style={{ left: pendingText.displayX, top: pendingText.displayY }} onChange={(event) => setPendingText((currentText) => ({ ...currentText, value: event.target.value }))} onKeyDown={handleTextKeyDown} />
+            )}
+          </div>
+        )}
         {!paintMode && drawingSaved && <img className="attached-image" src={drawingSaved} alt="그림판으로 작성한 그림" />}
       </div>
     </section>
