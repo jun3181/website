@@ -440,7 +440,7 @@ function EditorPage({ category, onCreate, navigate }) {
   }
 
   return (
-    <section className={`editor-page ${paintMode ? "is-paint-mode" : ""}`} aria-labelledby="editor-title">
+    <section className={`editor-page ${paintMode ? "is-paint-mode" : ""} ${drawingSaved ? "has-board-drawing" : ""}`} aria-labelledby="editor-title">
       <div className="editor-topbar">
         <strong>게시판</strong>
         <div>
@@ -477,7 +477,12 @@ function EditorPage({ category, onCreate, navigate }) {
       <div className="paper">
         <input id="editor-title" className="title-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="제목" />
         {image && <img className="attached-image" src={image} alt="첨부 미리보기" />}
-        <div className={paintMode ? "body-canvas-stack is-painting" : "body-canvas-stack"}>
+        <div className={`body-canvas-stack ${paintMode ? "is-painting" : ""} ${!paintMode && drawingSaved ? "has-saved-drawing" : ""}`}>
+          {!paintMode && drawingSaved && (
+            <div className="saved-drawing-frame">
+              <img className="saved-drawing-image" src={drawingSaved} alt="그림판으로 작성한 그림" />
+            </div>
+          )}
           <textarea className="body-input" style={{ fontFamily, fontSize: `${fontSize}px` }} value={body} onChange={(event) => setBody(event.target.value)} placeholder="글을 입력하세요" readOnly={paintMode} />
           {paintMode && (
             <div className="board-canvas-frame">
@@ -488,7 +493,6 @@ function EditorPage({ category, onCreate, navigate }) {
             </div>
           )}
         </div>
-        {!paintMode && drawingSaved && <img className="attached-image" src={drawingSaved} alt="그림판으로 작성한 그림" />}
       </div>
     </section>
   );
